@@ -1,0 +1,3 @@
+Gui contains all model, view, and controller.
+Vehicles class implements MovableVehicle interface
+Human, ATV, Car, Taxi, Bicycle, Truck extends Vehicles class.

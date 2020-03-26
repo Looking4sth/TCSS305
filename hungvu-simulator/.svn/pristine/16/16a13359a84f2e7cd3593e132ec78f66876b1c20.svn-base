@@ -1,0 +1,63 @@
+/*
+ * TCSS 305 - Fall 2019
+ * Assignment 3 - Traffic Simulator
+ * This class run a traffic simulation game. 
+ */
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+/**
+ * This class will test Human class
+ * @author Hung vu
+ * @version 13 11 2019
+ */
+class HumanTest {
+	/**
+	 * Instance field human is a human object itself, if it's created
+	 * then the constructor works.
+	 */
+	private Human human = new Human(1,2);
+	/**
+	 * This method will test all getters of Human class.
+	 */
+	@Test
+	void testGetter() {
+		assertEquals(1, human.getX());
+		assertEquals(2, human.getY());
+		assertTrue(human.isAlive());
+	}
+	/**
+	 * This method will test all setters of Human class.
+	 */
+	@Test
+	void testSetter() {
+		human.setX(0);
+		human.setY(3);
+		human.setAlive(false);
+		assertEquals(0, human.getX());
+		assertEquals(3, human.getY());
+		assertFalse(human.isAlive());
+	}
+	/**
+	 * This method will test toString() method of Human class.
+	 */
+	@Test
+	void testToString() {
+		assertEquals("The Human is alive at (2, 1).", human.toString());
+		human.setAlive(false);
+		assertEquals("The Human is dead", human.toString());
+	}
+	/**
+	 * This method will test reset() method of Human class.
+	 */
+	@Test
+	void testReset() {
+		human.move();
+		human.reset();
+		assertEquals(1, human.getX());
+		assertEquals(2, human.getY());
+	}
+}

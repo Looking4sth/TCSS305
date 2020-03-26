@@ -1,0 +1,24 @@
+13 24 // Number of grids in x and y directions, respectively
+XXXXXXXXXXXXXXXXXXXXXXXX // X indicates black colored borders of the map
+X|||+|||||||+||+|||||||X // | indicates a green field
+X|--|-------#---|--.--|X // - represents the streets
+X|--+.......|---|--.--|X // . represents the bicycle paths
+X|..|-------|---#--.--|X // # represents the traffic lights for people crossings
+X|--|||||||||||||--.--|X // + represents the traffic lights
+X|--|---.---|---|--.--|X
+X|||+|||||||+...|||||||X
+X|--|-------|------|--|X
+X+||||||||#|+|||#|||..|X
+X|----|--.---------#---X
+X||||||||||||||+||||---X
+XXXXXXXXXXXXXXXXXXXXXXXX
+9 // number of vehicles to be displayed on the map
+H 18 5 // Vehicle type H displayed at grid point (10, 9)
+H 10 9
+H 21 6
+B 5 7
+B 13 7
+A 1 11
+X 18 1
+C 8 5
+T 19 9
