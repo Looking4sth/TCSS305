@@ -1,0 +1,6 @@
+Comparable is for Comparable<T> interface.
+Comparator is for comparator<T> interface.
+TestTask2To5 is JUnit test for task 2 to task 5 in the following order: Alphabetical sort, Price Sort,
+	ItemOrder (equals, hashCode, toString), Cart (equals, hashCode, toString).
+TestTask6 is JUnit for task 6 (two specific cases shown in given picture).
+PriceComparison is object class to implements Comparator<Item>.

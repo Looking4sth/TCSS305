@@ -1,0 +1,300 @@
+/*
+ * TCSS 305 - Fall 2019
+ * Assignment 1 - Online Bookstore Application
+ * Assignment 2- Interface Extensions and Unit Tests
+ * This is JUnit test for task 2-5.
+ */
+package model;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+/**
+ * This class will test task 2-5 of assignment 2.
+ * @author Hung Vu
+ * @version 27 10 2019
+ */
+class TestTask2To5 {
+    /**
+     * Original price for myTestItem1 to avoid magic number error.
+     */
+    static final BigDecimal MYTESTITEM1_ORIGINAL_PRICE = BigDecimal.valueOf(4.41);
+    /**
+     * Bulk price for myTestItem1 to avoid magic number error.
+     */
+    static final BigDecimal MYTESTITEM1_BULK_PRICE = BigDecimal.valueOf(10.04);
+    /**
+     * Bulk quantity for myTestItem1 to avoid magic number error.
+     */
+    static final int MYTESTITEM1_BULK_QUANTITY = 6;
+    /**
+     * Original price for myTestItem2 to avoid magic number error.
+     */
+    static final BigDecimal MYTESTITEM2_ORIGINAL_PRICE = BigDecimal.valueOf(1297.99);
+    /**
+     * Original price for myTestItem3 to avoid magic number error.
+     */
+    static final BigDecimal MYTESTITEM3_ORIGINAL_PRICE = BigDecimal.valueOf(2.0);
+    /**
+     * Instance field myItemList will contains unsorted list of Item.
+     */
+    private List<Item> myItemList = new ArrayList<Item>();
+    /**
+     * Instance field myalphabeticalItemList will contain sorted list
+     * of Item in alphabetical order.
+     */
+    private List<Item> myAlphabeticalItemList = new ArrayList<Item>();
+    /**
+     * Instance field myPriceItemList will contain sorted list of Item
+     * in increasing price order.
+     */
+    private List<Item> myPriceItemList = new ArrayList<Item>();
+    /**
+     * Instance field myTestItem1 represents a random item.
+     */
+    private Item myTestItem1 = new Item("UW Note Pad", MYTESTITEM1_ORIGINAL_PRICE, 
+                                        MYTESTITEM1_BULK_QUANTITY, MYTESTITEM1_BULK_PRICE);
+    /**
+     * Instance field myTestItem2 represents a random item.
+     */
+    private Item myTestItem2 = new Item("Macbook Pro", MYTESTITEM2_ORIGINAL_PRICE);
+    /**
+     * Instance field myTestItem3 represents a random item.
+     */
+    private Item myTestItem3 = new Item("AAA Grade Eggs", MYTESTITEM3_ORIGINAL_PRICE);
+    /**
+     * Instance field myItemOrder represents a specific order used to compare
+     * with another one.
+     */
+    private ItemOrder myItemOrder = new ItemOrder(myTestItem2, 1);
+    /**
+     * Instance field myOtherItemOrder represents an order, which will be compared to
+     * myItemOrder.
+     */
+    private ItemOrder myOtherItemOrder;
+    /**
+     * Instance field myTestCart represents a specific cart used to compare
+     * with another one.
+     */
+    private Cart myTestCart = new Cart();
+    /**
+     * Instance field myOtherTestCart represents a cart, which will be compared to
+     * myTestCart.
+     */
+    private Cart myOtherTestCart;
+    
+    /**
+     * This method will initialized necessary object which will be used as
+     * instances to test other methods.
+     */
+    @BeforeEach
+    void setup() { 
+        myItemList.add(myTestItem2);
+        myItemList.add(myTestItem3);
+        myItemList.add(myTestItem2);
+        myItemList.add(myTestItem1);
+        
+        myAlphabeticalItemList.add(myTestItem3);
+        myAlphabeticalItemList.add(myTestItem2);
+        myAlphabeticalItemList.add(myTestItem2);
+        myAlphabeticalItemList.add(myTestItem1);
+        
+        myPriceItemList.add(myTestItem3);
+        myPriceItemList.add(myTestItem1);
+        myPriceItemList.add(myTestItem2);
+        myPriceItemList.add(myTestItem2);
+        
+        myTestCart.add(myItemOrder);
+        myTestCart.setMembership(true);
+    }
+    /**
+     * This method will test sort method with alphabetical order.
+     */
+    @Test
+    void testAlphabeticalSort() {
+        Collections.sort(myItemList);
+        assertEquals(myAlphabeticalItemList, myItemList);
+    }
+    /**
+     * This method will test sort method with increasing price order.
+     */
+    @Test
+    void testPriceSort() {
+        Collections.sort(myItemList, (firstItem, secondItem) 
+            -> firstItem.getPrice().compareTo(secondItem.getPrice()));
+        assertEquals(myPriceItemList, myItemList);          
+    }
+    // Start from here is test for ItemOrder
+    /**
+     * This method will check result of comparing an ItemOrder with itself.   
+     */
+    @Test
+    void testEqualsItemOrderWithItself() {
+        assertTrue(myItemOrder.equals(myItemOrder));
+    }
+    /**
+     * This method will check result of comparing a defined ItemOrder with
+     * another null ItemOrder.
+     */
+    @Test
+    void testEqualsNullItemOrder() {
+        myOtherItemOrder = null;
+        assertFalse(myItemOrder.equals(myOtherItemOrder));
+    }
+    /**
+     * This method will check result of comparing a defined ItemOrder with
+     * an non-ItemOrder object.
+     */
+    @Test
+    void testEqualsDifferentObjectTypeItemOrder() {
+        assertFalse(myItemOrder.equals(myTestItem1));
+    }
+    /**
+     * This method will check result of comparing a defined ItemOrder with 
+     * another one, which has the same order.
+     */
+    @Test
+    void testEqualsSameItemOrder() {
+        myOtherItemOrder = new ItemOrder(myTestItem2, 1);
+        assertTrue(myItemOrder.equals(myOtherItemOrder));
+    }
+    /**
+     * This method will check result of comparing a defined ItemOrder with
+     * another one, which has same Item but different quantity.
+     */
+    @Test
+    void testEqualsDifferentOrderQuantity() {
+        myOtherItemOrder = new ItemOrder(myTestItem2, 2);
+        assertFalse(myItemOrder.equals(myOtherItemOrder));
+    }
+    /**
+     * This method will check result of comparing a defined ItemOrder with
+     * another one, which has same quantity but different Item.
+     */
+    @Test
+    void testEqualsDifferentOrderName() {
+        myOtherItemOrder = new ItemOrder(myTestItem1, 1);
+        assertFalse(myItemOrder.equals(myOtherItemOrder));
+    }
+    /**
+     * This method will check result of comparing hash code of two different 
+     * ItemOrder but having the same order.
+     */
+    @Test
+    void testSameItemOrderHashCode() {
+        myOtherItemOrder = new ItemOrder(myTestItem2, 1);
+        assertEquals(myItemOrder.hashCode(), myOtherItemOrder.hashCode());
+    }
+    /**
+     * This method will check result of comparing hash code of two different 
+     * ItemOrder with different order.
+     */
+    @Test
+    void testDifferentItemOrderHashCode() {
+        myOtherItemOrder = new ItemOrder(myTestItem1, 1);
+        assertNotEquals(myItemOrder.hashCode(), myOtherItemOrder.hashCode());
+    }
+    /**
+     * This method will check result of printed string of defined ItemOrder.
+     */
+    @Test
+    void testToStringItemOrder() {
+        assertEquals("Macbook Pro, $1,297.99, qty: 1", myItemOrder.toString());
+    }
+    // Start from here is test for Cart.
+    /**
+     * This method will check result of comparing a Cart with itself.   
+     */
+    @Test
+    void testCartEqualsWithItself() {
+        assertTrue(myTestCart.equals(myTestCart));
+    }
+    /**
+     * This method will check result of comparing a defined Cart with another
+     * null cart.
+     */
+    @Test
+    void testCartEqualsNull() {
+        myOtherTestCart = null;
+        assertFalse(myTestCart.equals(myOtherTestCart));
+    }
+    /**
+     * This method will check result of comparing a defined Cart with another
+     * non-Cart object.
+     */
+    @Test
+    void testCartEqualsDifferentObjectType() {
+        assertFalse(myTestCart.equals(myTestItem1));
+    }
+    /**
+     * This method will check result of comparing two different Cart but 
+     * having the same order and membership status.
+     */
+    @Test
+    void testCartEqualsSameOrder() {
+        myOtherTestCart = new Cart();
+        myOtherTestCart.add(myItemOrder);
+        myOtherTestCart.setMembership(true);
+        assertTrue(myTestCart.equals(myOtherTestCart));
+    }
+    /**
+     * This method will check result of comparing two different Cart but
+     * having the same order. However, membership status is different.
+     */
+    @Test
+    void testCartEqualsDifferentMembershipStatus() {
+        myOtherTestCart = new Cart();
+        myOtherTestCart.add(myItemOrder);
+        myOtherTestCart.setMembership(false);
+        assertFalse(myTestCart.equals(myOtherTestCart));
+    }
+    /**
+     * This method will check result of comparing two different Cart but
+     * having the same membership status. However, the order is different.
+     */
+    @Test
+    void testCartEqualsDifferentItem() {
+        myOtherTestCart = new Cart();
+        final ItemOrder testItemOrder = new ItemOrder(myTestItem3, 1);
+        myOtherTestCart.add(testItemOrder);
+        myOtherTestCart.setMembership(true);
+        assertFalse(myTestCart.equals(myOtherTestCart));
+    }
+    /**
+     * This method will check result of comparing hashCode of two different
+     * Cart but having the same order.
+     */
+    @Test
+    void testCartSameOrderHashCode() {
+        myOtherTestCart = new Cart();
+        myOtherTestCart.add(myItemOrder);
+        myOtherTestCart.setMembership(true);
+        assertEquals(myTestCart.hashCode(), myOtherTestCart.hashCode());
+    }
+    /**
+     * This method will check result of comparing hashCode of two different
+     * Cart with different order.
+     */
+    @Test
+    void testCartDifferentOrderHashCode() {
+        myOtherTestCart = new Cart();
+        myOtherTestCart.add(myItemOrder);
+        myOtherTestCart.setMembership(false);
+        assertNotEquals(myTestCart.hashCode(), myOtherTestCart.hashCode());
+    }
+    /**
+     * This method will check result of printed string of defined Cart.
+     */
+    @Test
+    void testCartToString() {
+        assertEquals("My cart: [Macbook Pro, $1,297.99, qty: 1]", myTestCart.toString());
+    }
+}

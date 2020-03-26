@@ -1,0 +1,117 @@
+/*
+ * TCSS 305 - Fall 2019
+ * Assignment 1 - Online Bookstore Application
+ * This class creates a cart for online bookstore.
+ */
+
+package model;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+
+/**
+ * This class will put item in cart and compute its
+ * price based on membership status.
+ * @author Hung Vu
+ * @version 16 10 2019
+ */
+
+public class Cart {
+    /**
+     * Instance field myCartItem is where item is stored.
+     */
+    private final ArrayList<ItemOrder> myCartItem;
+    /**
+     * Instance field myMembershipStatus will store membership information.
+     */
+    private boolean myMembershipStatus;
+    /**
+     * This is class default constructor.
+     */
+    public Cart() {
+        myCartItem = new ArrayList<ItemOrder>();
+    }
+    
+    /**
+     * This class will add item into cart and replace
+     * the equivalent item with the new order (re-calculate price).
+     * @param theOrder the new order that is going to be put into cart
+     */
+    public void add(final ItemOrder theOrder) {
+        if (theOrder == null) {
+            throw new NullPointerException("Invalid order.");
+        }
+        for (ItemOrder i : myCartItem) {
+            if (i.getItem().equals(theOrder.getItem())) {
+                myCartItem.set(myCartItem.indexOf(i), theOrder);
+                return;
+            }
+        }
+        myCartItem.add(theOrder);
+    }
+
+    /**
+     * Command for setting membership status.
+     * @param theMembership membership status of customer (true is yes, false otherwise)
+     */
+    public void setMembership(final boolean theMembership) {
+        myMembershipStatus = theMembership;
+    }
+
+    /**
+     * This method will calculate total price of item in cart based on membership status.
+     * @return total price
+     */
+    public BigDecimal calculateTotal() {
+        BigDecimal finalPrice = BigDecimal.ZERO;
+        
+        for (ItemOrder i : myCartItem) {
+            final BigDecimal regularPrice = i.getItem().getPrice();
+            final BigDecimal regularQty = BigDecimal.valueOf(i.getQuantity());
+            final BigDecimal bulkPrice = i.getItem().getBulkPrice();
+            final BigDecimal bulkQty = BigDecimal.valueOf(i.getItem().getBulkQuantity());
+            /**
+             * The statement will check whether customer has membership and item has
+             * bulk price at the same time or not.
+             */
+            if (myMembershipStatus && i.getItem().isBulk()) {
+                final BigDecimal bulkNumber = regularQty.divide(bulkQty, RoundingMode.DOWN);
+                final BigDecimal remainQty = regularQty.subtract(bulkQty.multiply(bulkNumber));
+                finalPrice = finalPrice.add(bulkPrice.multiply(bulkNumber));
+                finalPrice = finalPrice.add(regularPrice.multiply(remainQty));
+            } else {
+                finalPrice = finalPrice.add(regularPrice.multiply(regularQty));
+            }
+            
+        }
+        return finalPrice.setScale(2, RoundingMode.HALF_EVEN);
+    }
+    
+    /**
+     * Command to empty the cart.
+     */
+    public void clear() {
+        myCartItem.clear();
+    }
+    
+    /**
+     * Return size of the cart.
+     * @return size of the cart
+     */
+    public int getCartSize() {
+        return myCartItem.size();
+    }
+
+
+    @Override
+    /**
+     * This class will override toString method with required print statement.
+     * General format: My cart: ['Item 1's name', 'US-currency price', qty: 'Item's quantity'
+     * , 'Item 2's name, ...)
+     */
+    public String toString() {
+        return "My cart: " + myCartItem.toString();
+    }
+
+}

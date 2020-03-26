@@ -1,0 +1,66 @@
+/*
+ * TCSS 305 - Fall 2019
+ * Assignment 1 - Online Bookstore Application
+ * Assignment 2- Interface Extensions and Unit Tests
+ * This is JUnit test for task 6.
+ */
+package model;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.math.BigDecimal;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+/**
+ * This class will test task 6 of assignment 2.
+ * @author Hung Vu
+ * @version 27 10 2019
+ */
+class CartTest {
+    /**
+     * Instance field myTestCart will contain items shown in task 6 picture.
+     */
+    private Cart myTestCart = new Cart();
+    /**
+     * This method will run before each test to instantiate
+     * a cart with all required items.
+     */
+    @BeforeEach
+    void setup() {
+        // Initialize required items.
+        final Item testItem1 = new Item("UW Note Pad", BigDecimal.valueOf(4.41), 
+                                  6, BigDecimal.valueOf(10.04));
+        final Item testItem2 = new Item("3 Ring Binder", BigDecimal.valueOf(9.99));
+        final Item testItem3 = new Item("2 Effective Java 3rd Ed", BigDecimal.valueOf(18.01));
+        final Item testItem4 = new Item("Macbook Pro", BigDecimal.valueOf(1297.99));
+        
+        // Initialize required order.
+        final ItemOrder testItemOrder1 = new ItemOrder(testItem1, 7);
+        final ItemOrder testItemOrder2 = new ItemOrder(testItem2, 1);
+        final ItemOrder testItemOrder3 = new ItemOrder(testItem3, 2);
+        final ItemOrder testItemOrder4 = new ItemOrder(testItem4, 1);
+        
+        // Add orders to cart
+        myTestCart.add(testItemOrder1);
+        myTestCart.add(testItemOrder2);
+        myTestCart.add(testItemOrder3);
+        myTestCart.add(testItemOrder4);
+    }
+    
+    /**
+     * This method will test total price of cart without store membership.
+     */
+    @Test
+    void nonMembershipTest() {
+        assertEquals(BigDecimal.valueOf(1374.87), myTestCart.calculateTotal());
+    }
+    /**
+     * This method will test total price of cart with store membership.
+     */
+    @Test
+    void membershipTest() {
+        myTestCart.setMembership(true);
+        assertEquals(BigDecimal.valueOf(1358.45), myTestCart.calculateTotal());
+    }
+
+}
