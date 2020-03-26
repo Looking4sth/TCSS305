@@ -1,0 +1,89 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import model.TetrisPiece;
+
+public class PreviewHelpPanel extends JPanel{
+    private static final Color MY_PREVIEW_BACKGROUND = new Color(178, 196, 240);
+    private JTextArea myHelp = new JTextArea(5, 10);
+    private JScrollPane myScrollHelp = new JScrollPane(myHelp);
+    
+    private JPanel mySubPreview = new JPanel();
+    private  JPanel[][] myPreviewBoard;
+    private  model.Point[] myPreviewPoint;
+    
+    private  TetrisPiece myNextPiece;
+    
+    
+    public PreviewHelpPanel() {
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        myPreviewBoard = new JPanel[4][4];       
+        mySubPreview.setLayout(new GridLayout(4,4));
+        for (int row = 3; row >= 0; row--) {
+            for (int col = 0; col < 4; col++) {
+                myPreviewBoard[row][col] = new JPanel() {
+                    /**
+                     * 
+                     */
+                    private static final long serialVersionUID = -4964029402372090427L;
+
+                    public void paintComponent(final Graphics theG) {
+                        super.paintComponent(theG);
+                        final Graphics2D g2 = (Graphics2D) theG;
+                        g2.setColor(Color.BLACK);
+                        g2.drawRect(0, 0, 100, 80);
+                    }
+                };
+                myPreviewBoard[row][col].setBackground(MY_PREVIEW_BACKGROUND);
+                mySubPreview.add(myPreviewBoard[row][col]);
+            }
+        }
+        myHelp.setEditable(false);
+        myHelp.setText("Move Left:  Left arrow and 'a' and 'A' \r\n" 
+                        + "Move Right:    Right arrow and 'd' and 'D' \r\n" 
+                        + "Rotate Up: arrow and 'w' and 'W' \r\n" 
+                        + "Move Down: Down arrow and 's' and 'S' \r\n" 
+                        + "Drop:  Space\r\n" 
+                        + "Pause: 'p' and 'P' ");
+        add(mySubPreview);
+        add(myScrollHelp);       
+    }
+    public void updatePreview() {
+        if (myPreviewPoint != null) {
+            for (model.Point p : myPreviewPoint) {
+                myPreviewBoard[p.y()][p.x()].setBackground(MY_PREVIEW_BACKGROUND);
+            }
+        }
+        myPreviewPoint = myNextPiece.getPoints();        
+        final model.Point[] point = myNextPiece.getPoints();
+        for (model.Point p : point) {
+            if (myNextPiece == TetrisPiece.I) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.CYAN);
+            } else if (myNextPiece == TetrisPiece.J) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.BLUE);
+            } else if (myNextPiece == TetrisPiece.L) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.ORANGE);
+            } else if (myNextPiece == TetrisPiece.O) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.YELLOW);
+            } else if (myNextPiece == TetrisPiece.S) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.GREEN);
+            } else if (myNextPiece == TetrisPiece.T) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.PINK);
+            } else if (myNextPiece == TetrisPiece.Z) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.RED);
+            }
+        }
+    }
+    public void setNextPiece(TetrisPiece theNextPiece) {
+        myNextPiece = theNextPiece;
+    }
+}

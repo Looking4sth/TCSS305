@@ -1,0 +1,19 @@
+Run the game using TetrisGui.java
+Final version of program including the following 4 class:
+1) PreviewHelpPanel
+2) BoardPanel
+3) TetrisGui
+
+These are in view package. If there are any other files, please ignore them. I don't know whether the old file will be
+deleted from SVN if the latest version of program already get rid of it before committing. Another the way is using 
+the zip file from submission.
+
+model Board was changed (comments are in it) to add autostep method.
+
+
+Sound files are taken from Morten (Username: LittleRobotSoundFactory - at
+https://freesound.org/people/LittleRobotSoundFactory/) following the rules at
+https://freesound.org/help/faq/#wait-this-is-all-free
+
+All sound file are under attribution license. Please notify if you think I'm not allowed to use these or something like that.
+Sound file name are modified for purpose of this program. Aside from that, all the file properties are still the same.

@@ -1,0 +1,199 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Observable;
+import java.util.Observer;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import model.Block;
+import model.Board;
+import model.TetrisPiece;
+
+public class TetrisGui extends JFrame implements Observer, ActionListener, KeyListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6222765806425189903L;   
+    private static final String DEFAULT_ANNOUNCEMENT = "INFORMATION:\n"
+                    + "The game will start right after you press New Game. \n";
+    private static final String START_AGAIN = "Press New Game to play again.";
+    private static final GridLayout FRAME_LAYOUT = new GridLayout(1,2);
+    private static final GridLayout BUTTONS_ANNOUNCEMENT_LAYOUT = new GridLayout(4,1);
+    private static final Dimension BUTTONS_ANNOUNCEMENT_DIMENSION = new Dimension(0,400);
+    private static final int FRAME_WIDTH = 615;
+    private static final int FRAME_HEIGHT = 840;
+    private static Board myBoard = new Board();
+    private PreviewHelpPanel myPreviewHelpPanel = new PreviewHelpPanel();
+    private BoardPanel myBoardPanel = new BoardPanel();
+    private JPanel myWest = new JPanel();
+    private JPanel myButtonsAnnouncement = new JPanel();    
+    private JTextArea myAnnouncement = new JTextArea(15, 10);    
+    private JScrollPane myScrollAnnouncement = new JScrollPane(myAnnouncement);
+
+    private JButton myNewGame = new JButton("New Game");
+    private JButton myPauseGame = new JButton("Pause Game");
+    private JButton myEndGame = new JButton("End Game");
+    
+    
+    private boolean myPauseStatus = false;
+    private boolean myEndStatus = true;
+    private boolean myTimerStatus = true;
+
+    public static void main(String[] args) {
+        final TetrisGui window = new TetrisGui();
+        myBoard.addObserver(window);
+        window.setTitle("Tetris");
+        window.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        window.setVisible(true);
+        window.setResizable(false);
+        window.addWindowListener(new WindowAdapter() {
+            public void windowClosing(final WindowEvent theE) {
+                System.exit(0);
+            }
+        });
+    
+    }
+    public TetrisGui() {
+        buttonsAnnouncementPanel();
+        myWest.setLayout(new BorderLayout());
+        myWest.add(myButtonsAnnouncement, BorderLayout.NORTH);
+        myWest.add(myPreviewHelpPanel, BorderLayout.CENTER);
+        getContentPane().setLayout(FRAME_LAYOUT);
+        getContentPane().add(myWest);
+        getContentPane().add(myBoardPanel);
+        
+        setFocusable(true);
+        requestFocusInWindow();
+        addKeyListener(this);
+        
+    }    
+    public void buttonsAnnouncementPanel() {
+        myButtonsAnnouncement.setLayout(BUTTONS_ANNOUNCEMENT_LAYOUT);
+        myButtonsAnnouncement.setPreferredSize(BUTTONS_ANNOUNCEMENT_DIMENSION);
+        myNewGame.addActionListener(this);
+        myPauseGame.addActionListener(this);
+        myEndGame.addActionListener(this);
+        myButtonsAnnouncement.add(myNewGame);
+        myButtonsAnnouncement.add(myPauseGame);
+        myButtonsAnnouncement.add(myEndGame);
+        myAnnouncement.setLineWrap(true);
+        myAnnouncement.setEditable(false);
+        myAnnouncement.setText(DEFAULT_ANNOUNCEMENT);
+        myButtonsAnnouncement.add(myScrollAnnouncement);
+        
+    }
+    @Override
+    public void update(final Observable theObs, final Object theData) {
+        if (theData instanceof Block[][]) {
+            myBoardPanel.setCurrentBlock((Block[][]) theData);
+            myBoardPanel.updateBoard();
+
+        }
+        if (theData instanceof TetrisPiece) {
+            myPreviewHelpPanel.setNextPiece((TetrisPiece) theData);
+            myPreviewHelpPanel.updatePreview();
+        }
+    }
+    @Override
+    public void actionPerformed(final ActionEvent theE) {
+        if (theE.getSource() == myNewGame) {
+            if (myEndStatus) {
+                myEndStatus = false;
+                myBoard.newGame();
+                if (myTimerStatus) {
+                    myBoard.autostep(myEndStatus);
+                }
+                myTimerStatus = false;
+                myAnnouncement.setText(DEFAULT_ANNOUNCEMENT
+                                + "New game start.");
+            } else {
+                myAnnouncement.setText("INFORMATION:\n"
+                                + "The game will start right after you press New Game. \n"
+                                + "Cannot start new game. \n"
+                                + "Please end the current game first.");
+            }
+            myBoardPanel.updateBoard();
+            myPreviewHelpPanel.updatePreview();
+            setFocusable(true);
+            requestFocusInWindow();
+        }
+        if (theE.getSource() == myPauseGame) {
+            if (!myEndStatus) {
+                if (!myPauseStatus) {
+                    myPauseStatus = true;
+                    myBoard.autostep(myPauseStatus);
+                    myAnnouncement.setText(DEFAULT_ANNOUNCEMENT
+                                    + "Game is paused");
+                } else {
+                    myPauseStatus = false;
+                    myBoard.autostep(myPauseStatus);
+                    myAnnouncement.setText(DEFAULT_ANNOUNCEMENT
+                                    + "Game is unpaused, keep going.");
+                    setFocusable(true);
+                    requestFocusInWindow();
+                }
+            } else {
+                myAnnouncement.setText(DEFAULT_ANNOUNCEMENT
+                                + "Game is ended, can not pause/unpause. \n"
+                                + START_AGAIN);
+            }
+        }
+        if (theE.getSource() == myEndGame) {
+            myEndStatus = true;
+            myTimerStatus = true;
+            myBoard.autostep(myEndStatus);
+            myAnnouncement.setText(DEFAULT_ANNOUNCEMENT
+                            + "Game Over. \n"
+                            + START_AGAIN);
+        }
+    }
+    @Override
+    public void keyTyped(final KeyEvent theE) {
+
+        if (theE.getKeyChar() == 'a' || theE.getKeyChar() == 'A') {
+            myBoard.left();
+        } else if (theE.getKeyChar() == 'd' || theE.getKeyChar() == 'D') {
+            myBoard.right();
+        } else if (theE.getKeyChar() == 's' || theE.getKeyChar() == 'S') {
+            myBoard.step();
+        } else if (theE.getKeyChar() == 'w' || theE.getKeyChar() == 'W') {
+            myBoard.rotateCW();
+        }
+
+    }
+    @Override
+    public void keyPressed(final KeyEvent theE) {
+
+    }
+    @Override
+    public void keyReleased(final KeyEvent theE) {
+
+        if (theE.getKeyCode() == KeyEvent.VK_DOWN) {
+            myBoard.step();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_LEFT) {
+            myBoard.left();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_RIGHT) {
+            myBoard.right();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_SPACE) {
+            myBoard.drop();
+        } else if (theE.getKeyCode() == KeyEvent.VK_UP) {
+            myBoard.rotateCW();
+        }
+
+    }
+    
+}

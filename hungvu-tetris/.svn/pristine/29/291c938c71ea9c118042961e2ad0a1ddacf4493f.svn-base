@@ -1,0 +1,81 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.util.ArrayList;
+
+import javax.swing.JPanel;
+
+import model.Block;
+
+public class BoardPanel extends JPanel{
+    private JPanel[][] myGameBoard;
+    private final Color MY_BOARD_BACKGROUND = new Color(255, 219, 172);
+    private ArrayList<Integer> myXBoard = new ArrayList<Integer>();
+    private ArrayList<Integer> myYBoard = new ArrayList<Integer>();
+    private Block[][] myCurrentBlock;
+    public BoardPanel() {
+        setLayout(new GridLayout(20, 10));               
+        myGameBoard = new JPanel[20][10];               
+        for (int row = 19; row >= 0; row--) {
+            for (int col = 0; col < 10; col++) {                               
+                myGameBoard[row][col] = new JPanel() {
+                    public void paintComponent(final Graphics theG) {
+                        super.paintComponent(theG);
+                        final Graphics2D g2 = (Graphics2D) theG;
+                        g2.setColor(Color.BLACK);
+                        g2.drawRect(0, 0, 30, 40);                        
+                    }
+                };
+                myGameBoard[row][col].setBackground(MY_BOARD_BACKGROUND);
+
+                
+//                myGameBoard[row][col].add(new JLabel(Integer.toString(col)
+//                                                     + " " + Integer.toString(row)));
+                add(myGameBoard[row][col]);
+            }
+        }
+
+    }
+    public void updateBoard() {
+        if (myXBoard != null && myYBoard != null) {
+            for (int i = 0; i < myXBoard.size(); i++) {
+                myGameBoard[myXBoard.get(i)][myYBoard.get(i)].
+                            setBackground(MY_BOARD_BACKGROUND);
+
+            }
+            myXBoard.clear();
+            myYBoard.clear();
+        }
+
+        for (int i = 0; i < myCurrentBlock.length; i++) {
+            for (int j = 0; j < myCurrentBlock[0].length; j++) {
+                if (myCurrentBlock[i][j] != null && i < 20) {
+                    if (myCurrentBlock[i][j] == Block.I) {
+                        myGameBoard[i][j].setBackground(Color.CYAN);
+                    } else if (myCurrentBlock[i][j] == Block.J) {
+                        myGameBoard[i][j].setBackground(Color.BLUE);
+                    } else if (myCurrentBlock[i][j] == Block.L) {
+                        myGameBoard[i][j].setBackground(Color.ORANGE);
+                    } else if (myCurrentBlock[i][j] == Block.O) {
+                        myGameBoard[i][j].setBackground(Color.YELLOW);
+                    } else if (myCurrentBlock[i][j] == Block.S) {
+                        myGameBoard[i][j].setBackground(Color.GREEN);
+                    } else if (myCurrentBlock[i][j] == Block.T) {
+                        myGameBoard[i][j].setBackground(Color.PINK);
+                    } else if (myCurrentBlock[i][j] == Block.Z) {
+                        myGameBoard[i][j].setBackground(Color.RED);
+                    }
+                    
+                    myXBoard.add(Integer.valueOf(i));
+                    myYBoard.add(Integer.valueOf(j));
+                }
+            }
+        }
+    }
+    public void setCurrentBlock(Block[][] theBlock) {
+        myCurrentBlock = theBlock;
+    }
+}

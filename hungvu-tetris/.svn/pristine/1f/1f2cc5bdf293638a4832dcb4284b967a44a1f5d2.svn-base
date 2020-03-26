@@ -1,0 +1,370 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import model.Block;
+import model.Board;
+import model.TetrisPiece;
+
+public class TetrisGui extends JFrame implements Observer, ActionListener, KeyListener {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6222765806425189903L;
+    private static final Color MY_PREVIEW_BACKGROUND = new Color(178, 196, 240);
+    private static final Color MY_BOARD_BACKGROUND = new Color(255, 219, 172);
+    
+    //  private ArrayList<JPanel> myPaintBlock = new ArrayList<JPanel>();
+    private static ArrayList<Integer> myXBoard = new ArrayList<Integer>();
+    private static ArrayList<Integer> myYBoard = new ArrayList<Integer>();
+    //  private static ArrayList<Integer> myXPreview = new ArrayList<Integer>();
+    //  private static ArrayList<Integer> myYPreview = new ArrayList<Integer>();
+
+    private static JPanel[][] myGameBoard;
+    private static JPanel[][] myPreviewBoard;
+
+
+    private static Board myBoard = new Board();
+    private static Block[][] myCurrentBlock;
+    private static TetrisPiece myNextPiece;
+    private static model.Point[] myPreviewPoint;
+    
+    private JPanel myWest = new JPanel();
+    private JPanel myEast = new JPanel();
+    private JPanel myPreviewHelp = new JPanel();
+    private JPanel mySubPreview = new JPanel();
+    
+    private JPanel myButtonsAnnouncement = new JPanel();
+    
+    private JTextArea myPreview = new JTextArea(5, 10);
+    private JTextArea myHelp = new JTextArea(5, 10);
+    private JTextArea myAnnouncement = new JTextArea(15, 10);
+    
+    private JScrollPane myScrollAnnouncement = new JScrollPane(myAnnouncement);
+    private JScrollPane myScrollHelp = new JScrollPane(myHelp);
+    private JButton myNewGame = new JButton("New Game");
+    private JButton myPauseGame = new JButton("Pause Game");
+    private JButton myEndGame = new JButton("End Game");
+    
+    
+    private boolean myPauseStatus = false;
+    private boolean myEndStatus = true;
+    private boolean myTimerStatus = true;
+
+    public static void main(String[] args) {
+
+        final TetrisGui window = new TetrisGui();
+        myBoard.addObserver(window);
+//        myBoard.newGame();
+//        myBoard.autostep();
+        window.setTitle("Tetris");
+        window.setSize(615, 840);
+        window.setVisible(true);
+        window.setResizable(false);
+        window.addWindowListener(new WindowAdapter() {
+            public void windowClosing(final WindowEvent theE) {
+                System.exit(0);
+            }
+        });
+    
+    }
+    public TetrisGui() {
+        previewHelpPanel();
+        buttonsAnnouncementPanel();
+        gameBoardPanel();
+        myWest.setLayout(new BorderLayout());
+        myWest.add(myButtonsAnnouncement, BorderLayout.NORTH);
+        myWest.add(myPreviewHelp, BorderLayout.CENTER);
+        getContentPane().setLayout(new GridLayout(1,2));
+        getContentPane().add(myWest);
+        getContentPane().add(myEast);
+        
+        setFocusable(true);
+        requestFocusInWindow();
+        addKeyListener(this);
+        
+    }
+    public void previewHelpPanel() {
+        myPreviewHelp.setLayout(new BoxLayout(myPreviewHelp, BoxLayout.PAGE_AXIS));
+        myPreviewBoard = new JPanel[4][4];       
+        mySubPreview.setLayout(new GridLayout(4,4));
+        for (int row = 3; row >= 0; row--) {
+            for (int col = 0; col < 4; col++) {
+                myPreviewBoard[row][col] = new JPanel() {
+                    /**
+                     * 
+                     */
+                    private static final long serialVersionUID = -4964029402372090427L;
+
+                    public void paintComponent(final Graphics theG) {
+                        super.paintComponent(theG);
+                        final Graphics2D g2 = (Graphics2D) theG;
+                        g2.setColor(Color.BLACK);
+                        g2.drawRect(0, 0, 100, 80);
+                    }
+                };
+                myPreviewBoard[row][col].setBackground(MY_PREVIEW_BACKGROUND);
+                mySubPreview.add(myPreviewBoard[row][col]);
+            }
+        }
+        myHelp.setEditable(false);
+        myHelp.setText("Move Left:  Left arrow and 'a' and 'A' \r\n" 
+                        + "Move Right:    Right arrow and 'd' and 'D' \r\n" 
+                        + "Rotate Up: arrow and 'w' and 'W' \r\n" 
+                        + "Move Down: Down arrow and 's' and 'S' \r\n" 
+                        + "Drop:  Space\r\n" 
+                        + "Pause: 'p' and 'P' ");
+        myPreviewHelp.add(mySubPreview);
+        myPreviewHelp.add(myScrollHelp);
+        
+    }
+    
+    public void buttonsAnnouncementPanel() {
+        myButtonsAnnouncement.setLayout(new GridLayout(4, 1));
+        myButtonsAnnouncement.setPreferredSize(new Dimension(0, 400));
+        myNewGame.addActionListener(this);
+        myPauseGame.addActionListener(this);
+        myEndGame.addActionListener(this);
+        myButtonsAnnouncement.add(myNewGame);
+        myButtonsAnnouncement.add(myPauseGame);
+        myButtonsAnnouncement.add(myEndGame);
+        myAnnouncement.setLineWrap(true);
+        myAnnouncement.setEditable(false);
+        myAnnouncement.setText("INFORMATION:\n"
+                        + "The game will start right after you press New Game.");
+        myButtonsAnnouncement.add(myScrollAnnouncement);
+        
+    }
+    public void gameBoardPanel() {
+        myEast.setLayout(new GridLayout(20, 10));               
+        myGameBoard = new JPanel[20][10];               
+        for (int row = 19; row >= 0; row--) {
+            for (int col = 0; col < 10; col++) {                               
+                myGameBoard[row][col] = new JPanel() {
+                    public void paintComponent(final Graphics theG) {
+                        super.paintComponent(theG);
+                        final Graphics2D g2 = (Graphics2D) theG;
+                        g2.setColor(Color.BLACK);
+                        g2.drawRect(0, 0, 30, 40);                        
+                    }
+                };
+                myGameBoard[row][col].setBackground(MY_BOARD_BACKGROUND);
+
+                
+//                myGameBoard[row][col].add(new JLabel(Integer.toString(col)
+//                                                     + " " + Integer.toString(row)));
+                myEast.add(myGameBoard[row][col]);
+            }
+        }
+
+    }
+    public static void updateBoard() {
+        if (myXBoard != null && myYBoard != null) {
+            for (int i = 0; i < myXBoard.size(); i++) {
+                myGameBoard[myXBoard.get(i)][myYBoard.get(i)].
+                            setBackground(MY_BOARD_BACKGROUND);
+
+            }
+            myXBoard.clear();
+            myYBoard.clear();
+        }
+
+        for (int i = 0; i < myCurrentBlock.length; i++) {
+            for (int j = 0; j < myCurrentBlock[0].length; j++) {
+                if (myCurrentBlock[i][j] != null && i < 20) {
+                    if (myCurrentBlock[i][j] == Block.I) {
+                        myGameBoard[i][j].setBackground(Color.CYAN);
+                    } else if (myCurrentBlock[i][j] == Block.J) {
+                        myGameBoard[i][j].setBackground(Color.BLUE);
+                    } else if (myCurrentBlock[i][j] == Block.L) {
+                        myGameBoard[i][j].setBackground(Color.ORANGE);
+                    } else if (myCurrentBlock[i][j] == Block.O) {
+                        myGameBoard[i][j].setBackground(Color.YELLOW);
+                    } else if (myCurrentBlock[i][j] == Block.S) {
+                        myGameBoard[i][j].setBackground(Color.GREEN);
+                    } else if (myCurrentBlock[i][j] == Block.T) {
+                        myGameBoard[i][j].setBackground(Color.PINK);
+                    } else if (myCurrentBlock[i][j] == Block.Z) {
+                        myGameBoard[i][j].setBackground(Color.RED);
+                    }
+                    
+                    myXBoard.add(Integer.valueOf(i));
+                    myYBoard.add(Integer.valueOf(j));
+                }
+            }
+        }
+    }
+    public static void updatePreview() {
+        if (myPreviewPoint != null) {
+            for (model.Point p : myPreviewPoint) {
+                myPreviewBoard[p.y()][p.x()].setBackground(MY_PREVIEW_BACKGROUND);
+            }
+        }
+        myPreviewPoint = myNextPiece.getPoints();        
+        final model.Point[] point = myNextPiece.getPoints();
+        for (model.Point p : point) {
+            if (myNextPiece == TetrisPiece.I) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.CYAN);
+            } else if (myNextPiece == TetrisPiece.J) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.BLUE);
+            } else if (myNextPiece == TetrisPiece.L) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.ORANGE);
+            } else if (myNextPiece == TetrisPiece.O) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.YELLOW);
+            } else if (myNextPiece == TetrisPiece.S) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.GREEN);
+            } else if (myNextPiece == TetrisPiece.T) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.PINK);
+            } else if (myNextPiece == TetrisPiece.Z) {
+                myPreviewBoard[p.y()][p.x()].setBackground(Color.RED);
+            }
+        }
+//            switch (myNextPiece) {
+//                case I:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.CYAN);
+//                case J:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.BLUE);
+//                case L:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.ORANGE);
+//                case O:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.YELLOW);
+//                case S:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.GREEN);
+//                case T:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.PINK);
+//                case Z:
+//                    myPreviewBoard[p.y()][p.x()].setBackground(Color.RED);
+//            }
+//        }
+    }
+    @Override
+    public void update(final Observable theObs, final Object theData) {
+        if (theData instanceof Block[][]) {
+            myCurrentBlock = (Block[][]) theData;
+            updateBoard();
+
+        }
+        if (theData instanceof TetrisPiece) {
+            myNextPiece = (TetrisPiece) theData;
+            updatePreview();
+        }
+    }
+    @Override
+    public void actionPerformed(final ActionEvent theE) {
+        int gameCounter = 0;
+        if (theE.getSource() == myNewGame) {
+            if (myEndStatus) {
+                myEndStatus = false;
+                myBoard.newGame();
+                if (myTimerStatus) {
+                    myBoard.autostep(myEndStatus);
+                }
+                myTimerStatus = false;
+                myAnnouncement.setText("INFORMATION:\n"
+                                + "The game will start right after you press New Game. \n"
+                                + "New game start.");
+            }
+            else {
+                myAnnouncement.setText("INFORMATION:\n"
+                                + "The game will start right after you press New Game. \n"
+                                + "Cannot start new game. \n"
+                                + "Please end the current game first.");
+            }
+            updateBoard();
+            updatePreview();
+            setFocusable(true);
+            requestFocusInWindow();
+        }
+        if (theE.getSource() == myPauseGame) {
+            if (!myEndStatus) {
+                if (!myPauseStatus) {
+                    myPauseStatus = true;
+                    myBoard.autostep(myPauseStatus);
+                    myAnnouncement.setText("INFORMATION:\n"
+                                    + "The game will start right after you press New Game. \n"
+                                    + "Game is paused");
+                } else {
+                    myPauseStatus = false;
+                    myBoard.autostep(myPauseStatus);
+                    myAnnouncement.setText("INFORMATION:\n"
+                                    + "The game will start right after you press New Game. \n"
+                                    + "Game is unpaused, keep going.");
+                    setFocusable(true);
+                    requestFocusInWindow();
+                }
+            } else {
+                myAnnouncement.setText("INFORMATION:\n"
+                                + "The game will start right after you press New Game. \n"
+                                + "Game is ended, can not pause/unpause. \n"
+                                + "Press New Game to play again.");
+            }
+        }
+        if (theE.getSource() == myEndGame) {
+            myEndStatus = true;
+            myTimerStatus = true;
+            myBoard.autostep(myEndStatus);
+            myAnnouncement.setText("INFORMATION:\n"
+                            + "The game will start right after you press New Game. \n"
+                            + "Game Over. \n"
+                            + "Press New Game to play again.");
+        }
+    }
+    @Override
+    public void keyTyped(final KeyEvent theE) {
+
+        if (theE.getKeyChar() == 'a' || theE.getKeyChar() == 'A') {
+            myBoard.left();
+        } else if (theE.getKeyChar() == 'd' || theE.getKeyChar() == 'D') {
+            myBoard.right();
+        } else if (theE.getKeyChar() == 's' || theE.getKeyChar() == 'S') {
+            myBoard.step();
+        } else if (theE.getKeyChar() == 'w' || theE.getKeyChar() == 'W') {
+            myBoard.rotateCW();
+        }
+
+    }
+    @Override
+    public void keyPressed(final KeyEvent theE) {
+
+    }
+    @Override
+    public void keyReleased(final KeyEvent theE) {
+
+        if (theE.getKeyCode() == KeyEvent.VK_DOWN) {
+            myBoard.step();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_LEFT) {
+            myBoard.left();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_RIGHT) {
+            myBoard.right();
+
+        } else if (theE.getKeyCode() == KeyEvent.VK_SPACE) {
+            myBoard.drop();
+        } else if (theE.getKeyCode() == KeyEvent.VK_UP) {
+            myBoard.rotateCW();
+        }
+
+    }
+    
+}
