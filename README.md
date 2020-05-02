@@ -1,5 +1,5 @@
 # TCSS305-Programming Practicum
-Homework.
+Projects
 
 1. Online Bookstore Application<br /> 
 Implement model (in MVC) based on given APIs for the apllication<br />
